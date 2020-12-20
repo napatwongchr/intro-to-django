@@ -22,6 +22,7 @@ Serialization เป็นกระบวนการในการเปลี
 
 ```
 from rest_framework import serializers
+from .model import Question, Choice
 
 class QuestionSerializer(serializers.ModelSerializer):
   class Meta:
@@ -42,7 +43,7 @@ class ChoiceSerializer(serializers.ModelSerializer):
 
 ```
 from rest_framework import status
-from rest_framework import api_view
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from polls.models import Question
 from polls.serializers import QuestionSerializer
@@ -52,7 +53,7 @@ def question_list(request):
   if request.method == 'GET':
     questions = Question.objects.all()
     serializer = QuestionSerializer(questions, many=True)
-    return Response(serializer.data)
+    return Response({ data: serializer.data })
 
   if request.method == 'POST'
     serializer = QuestionSerializer(data=request.data)
@@ -66,9 +67,9 @@ def question_list(request):
 
 ```
 @api_view(['GET', 'POST', 'DELETE'])
-def question_detail(request, pk):
+def question_detail(request, question_id):
   try:
-    question = Snippet.objects.get(pk=pk)
+    question = Snippet.objects.get(pk=question_id)
   except Question.DoesNotExist:
     return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -77,7 +78,7 @@ def question_detail(request, pk):
     return Response(serializer.data)
 
   elif request.method == 'PUT':
-    serializer = QuestionSerializer(request.data)
+    serializer = QuestionSerializer(question, request.data)
     if serializer.is_valid():
       serializer.save()
       return Response(serializer.data)
@@ -96,6 +97,6 @@ from polls import views
 
 urlpatterns = [
   path('questions/', views.question_list),
-  path('questions/<int:pk>, views.question_detail)
+  path('questions/<int:question_id>, views.question_detail)
 ]
 ```
